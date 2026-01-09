@@ -1,3 +1,6 @@
-transformers
+azure-functions
+azure-ai-textanalytics
+python-dotenv
+flask
 torch
-pandas
+transformers
