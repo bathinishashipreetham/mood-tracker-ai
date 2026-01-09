@@ -1,44 +1,84 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>AI Mental Health Mood Tracker</title>
   <link rel="stylesheet" href="/static/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body>
 
-  <div class="container">
-    <h1>🧠 AI Mental Health Mood Tracker</h1>
+<body>
+  <div class="card">
+
+    <h1>🧠 MoodSense</h1>
+    <p class="subtitle">AI-powered mental health mood tracker</p>
 
     <textarea id="text" placeholder="How are you feeling today?"></textarea>
 
     <button onclick="analyzeMood()">Analyze Mood</button>
 
-    <div id="result"></div>
+    <div id="result" class="result hidden"></div>
+
+    <h2>📜 Mood History</h2>
+    <ul id="history"></ul>
+
+    <footer>
+      Built with ❤️ using Azure AI
+    </footer>
+
   </div>
 
-  <script>
-    async function analyzeMood() {
-      const text = document.getElementById("text").value;
-      const resultDiv = document.getElementById("result");
+<script>
+async function analyzeMood() {
+  const text = document.getElementById("text").value;
+  const resultDiv = document.getElementById("result");
 
-      resultDiv.innerHTML = "⏳ Analyzing...";
+  if (!text.trim()) {
+    resultDiv.classList.remove("hidden");
+    resultDiv.innerHTML = "⚠️ Please enter some text.";
+    return;
+  }
 
-      const response = await fetch("/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text })
-      });
+  resultDiv.classList.remove("hidden");
+  resultDiv.innerHTML = "⏳ Analyzing your mood...";
 
-      const data = await response.json();
+  const response = await fetch("/analyze", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text })
+  });
 
-      resultDiv.innerHTML = `
-        <p><strong>Mood:</strong> ${data.mood}</p>
-        <p><strong>Confidence:</strong> ${data.confidence}</p>
-        <p><strong>Suggestion:</strong> ${data.suggestion}</p>
-      `;
-    }
-  </script>
+  const data = await response.json();
+
+  resultDiv.innerHTML = `
+    <strong>Mood:</strong> ${data.mood}<br>
+    <strong>Confidence:</strong> ${data.confidence}<br>
+    <strong>Suggestion:</strong> ${data.suggestion}
+  `;
+
+  loadHistory();
+}
+
+async function loadHistory() {
+  const res = await fetch("/history");
+  const history = await res.json();
+  const list = document.getElementById("history");
+
+  list.innerHTML = "";
+
+  history.forEach(item => {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <span class="time">${item.time}</span>
+      <p>${item.text}</p>
+      <span class="badge mood">${item.mood}</span>
+    `;
+    list.appendChild(li);
+  });
+}
+
+loadHistory();
+</script>
 
 </body>
 </html>
