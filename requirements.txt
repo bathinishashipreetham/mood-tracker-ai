@@ -1,6 +1,7 @@
+flask
+gunicorn
 azure-functions
 azure-ai-textanalytics
 python-dotenv
-flask
 torch
 transformers
