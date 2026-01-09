@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from suggestions import get_suggestion
 
 try:
@@ -10,7 +10,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "🧠 AI Mental Health Mood Tracker is running"
+    return render_template("index.html")
 
 @app.route("/analyze", methods=["POST"])
 def analyze():

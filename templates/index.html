@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Mental Health Mood Tracker</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1>🧠 AI Mental Health Mood Tracker</h1>
+
+    <textarea id="text" placeholder="How are you feeling today?"></textarea>
+
+    <button onclick="analyzeMood()">Analyze Mood</button>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    async function analyzeMood() {
+      const text = document.getElementById("text").value;
+      const resultDiv = document.getElementById("result");
+
+      resultDiv.innerHTML = "⏳ Analyzing...";
+
+      const response = await fetch("/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text })
+      });
+
+      const data = await response.json();
+
+      resultDiv.innerHTML = `
+        <p><strong>Mood:</strong> ${data.mood}</p>
+        <p><strong>Confidence:</strong> ${data.confidence}</p>
+        <p><strong>Suggestion:</strong> ${data.suggestion}</p>
+      `;
+    }
+  </script>
+
+</body>
+</html>
