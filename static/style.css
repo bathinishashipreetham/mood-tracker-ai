@@ -147,3 +147,8 @@ footer {
 .badge:contains("Sad") { background: #e5e7eb; color: #374151; }
 .badge:contains("Anxious") { background: #fecaca; color: #7f1d1d; }
 .badge:contains("Depressed") { background: #ddd6fe; color: #4c1d95; }
+
+canvas {
+  margin-top: 20px;
+  max-height: 250px;
+}

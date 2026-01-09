@@ -5,6 +5,8 @@
   <title>AI Mental Health Mood Tracker</title>
   <link rel="stylesheet" href="/static/style.css">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 </head>
 
 <body>
@@ -21,6 +23,9 @@
 
     <h2>📜 Mood History</h2>
     <ul id="history"></ul>
+	<h2>📊 Mood Chart</h2>
+	<canvas id="moodChart"></canvas>
+
 
     <footer>
       Built with ❤️ using Azure AI
@@ -29,6 +34,46 @@
   </div>
 
 <script>
+async function analyzeMood() {
+  const text = document.getElementById("text").value;
+  const resultDiv = document.getElementById("result");
+
+  if (!text.trim()) {
+    resultDiv.classList.remove("hidden");
+    resultDiv.innerHTML = "⚠️ Please enter some text.";
+    return;
+  }
+
+  resultDiv.classList.remove("hidden");
+  resultDiv.innerHTML = "⏳ Analyzing your mood...";
+
+  const response = await fetch("/analyze", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text })
+  });
+
+  const data = await response.json();
+
+  resultDiv.innerHTML = `
+    <strong>Mood:</strong> ${data.mood}<br>
+    <strong>Confidence:</strong> ${data.confidence}<br>
+    <strong>Suggestion:</strong> ${data.suggestion}
+  `;
+
+<script>
+let chart;
+
+const moodScoreMap = {
+  "😄 Happy": 5,
+  "😃 Excited": 4,
+  "😌 Calm": 3,
+  "😐 Neutral": 2,
+  "😢 Sad": 1,
+  "😨 Anxious": 1,
+  "😞 Depressed": 0
+};
+
 async function analyzeMood() {
   const text = document.getElementById("text").value;
   const resultDiv = document.getElementById("result");
@@ -66,19 +111,67 @@ async function loadHistory() {
 
   list.innerHTML = "";
 
-  history.forEach(item => {
+  const labels = [];
+  const scores = [];
+
+  history.slice().reverse().forEach(item => {
+    labels.push(item.time);
+    scores.push(moodScoreMap[item.mood] ?? 2);
+
     const li = document.createElement("li");
     li.innerHTML = `
       <span class="time">${item.time}</span>
       <p>${item.text}</p>
-      <span class="badge mood">${item.mood}</span>
+      <span class="badge">${item.mood}</span>
     `;
     list.appendChild(li);
+  });
+
+  drawChart(labels, scores);
+}
+
+function drawChart(labels, data) {
+  const ctx = document.getElementById("moodChart").getContext("2d");
+
+  if (chart) chart.destroy();
+
+  chart = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: labels,
+      datasets: [{
+        label: "Mood Trend",
+        data: data,
+        borderColor: "#4f46e5",
+        backgroundColor: "rgba(79,70,229,0.1)",
+        fill: true,
+        tension: 0.4,
+        pointRadius: 5
+      }]
+    },
+    options: {
+      scales: {
+        y: {
+          min: 0,
+          max: 5,
+          ticks: {
+            stepSize: 1,
+            callback: value => [
+              "😞",
+              "😢",
+              "😐",
+              "😌",
+              "😃",
+              "😄"
+            ][value]
+          }
+        }
+      }
+    }
   });
 }
 
 loadHistory();
 </script>
-
 </body>
 </html>
